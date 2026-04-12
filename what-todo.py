@@ -1,7 +1,16 @@
+import argparse
 import os
 import sys
 
 from dataclasses import dataclass
+
+@dataclass
+class Args:
+    """
+    Arguments that can be passed to the script.
+    """
+    dir: str
+    recursive: bool
 
 @dataclass
 class Todo:
@@ -104,16 +113,27 @@ def get_todos_from_file(
     return todos
 
 if __name__ == "__main__":
-    directory: str = ""
-    if len(sys.argv) <= 1:
-        directory = os.getcwd()
-    else:
-        directory = sys.argv[1]
+    parser: argparse.ArgumentParser = argparse.ArgumentParser()
+
+    parser.add_argument(
+        "dir",
+        nargs="?",
+        default=os.getcwd(),
+        help="Directory to scan. Defaults to the current working directory.",
+    )
+    parser.add_argument(
+        "-r",
+        "--recursive",
+        action="store_true",
+        help="Also scan subdirectories.",
+    )
+
+    args: Args = parser.parse_args(namespace=Args("", False))
     
-    if not os.path.isdir(directory):
-        raise ValueError(f"Path does not exist: {directory}")
+    if not os.path.isdir(args.dir):
+        raise ValueError(f"Path does not exist: {args.dir}")
     
-    files: list[File] = get_supported_files(directory, recursive=True)
+    files: list[File] = get_supported_files(args.dir, recursive=args.recursive)
 
     for f in files:
         todos: list[Todo] = get_todos_from_file(f)
