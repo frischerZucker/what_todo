@@ -9,7 +9,7 @@ class Args:
     """
     Arguments that can be passed to the script.
     """
-    dir: str
+    path: str
     recursive: bool
 
 @dataclass
@@ -114,12 +114,11 @@ def get_todos_from_file(
 
 if __name__ == "__main__":
     parser: argparse.ArgumentParser = argparse.ArgumentParser()
-
     parser.add_argument(
-        "dir",
+        "path",
         nargs="?",
         default=os.getcwd(),
-        help="Directory to scan. Defaults to the current working directory.",
+        help="Path to a directory or file to scan. Defaults to the current working directory.",
     )
     parser.add_argument(
         "-r",
@@ -127,13 +126,23 @@ if __name__ == "__main__":
         action="store_true",
         help="Also scan subdirectories.",
     )
-
     args: Args = parser.parse_args(namespace=Args("", False))
     
-    if not os.path.isdir(args.dir):
-        raise ValueError(f"Path does not exist: {args.dir}")
-    
-    files: list[File] = get_supported_files(args.dir, recursive=args.recursive)
+    if not os.path.exists(args.path):
+        raise FileNotFoundError(f"Path does not exist: {args.path}")
+
+    files: list[File] = []
+    if os.path.isdir(args.path):
+        # Path points to a directory. -> Scan the whole directory for supported files.
+        files.extend(get_supported_files(args.path, recursive=args.recursive))
+    elif os.path.isfile(args.path):
+        # Path points to a file. -> Directly include the file (if it is of a supported file type).
+        file_name: str = os.path.basename(args.path)
+
+        if not file_name.split(".")[-1] in supported_file_extensions:
+            raise ValueError(f"File type is not supported: {file_name}")
+
+        files.append(File(path=args.path, name=file_name, extension=file_name.split(".")[-1], comment_specifier=comment_specifiers[file_name.split(".")[-1]]))
 
     for f in files:
         todos: list[Todo] = get_todos_from_file(f)
