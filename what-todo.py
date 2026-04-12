@@ -44,6 +44,7 @@ comment_specifiers: dict[str, str] = {
 
 def get_supported_files(
     directory: str,
+    recursive: bool = False,
 ) -> list[File]:
     """
     Get a list with supported files in the directory.
@@ -53,16 +54,21 @@ def get_supported_files(
 
     :param directory: Path to the directory to look into.
     :type directory: str
+    :param recursive: Wether subdirectories are also scanned or not.
+    :type recursive: bool
 
     :returns: list[File]
     """
-    file_names: list[str] = os.listdir(directory)
-    
-    file_names = [f for f in file_names if f.split(".")[-1] in supported_file_extensions]
+    supported_files: list[File] = []
+    if recursive:
+        for (current_directory, _, files) in os.walk(directory):
+            supported_files.extend([File(path=os.path.join(current_directory, f), name=f, extension=f.split(".")[-1], comment_specifier=comment_specifiers[f.split(".")[-1]]) for f in files if f.split(".")[-1] in supported_file_extensions])
+    else:
+        file_names: list[str] = [f for f in os.listdir(directory) if f.split(".")[-1] in supported_file_extensions]
 
-    files: list[File] = [File(path=os.path.join(directory, f), name=f, extension=f.split(".")[-1], comment_specifier=comment_specifiers[f.split(".")[-1]]) for f in file_names]
+        supported_files = [File(path=os.path.join(directory, f), name=f, extension=f.split(".")[-1], comment_specifier=comment_specifiers[f.split(".")[-1]]) for f in file_names]
 
-    return files
+    return supported_files
 
 def get_todos_from_file(
     file: File,
@@ -107,7 +113,7 @@ if __name__ == "__main__":
     if not os.path.isdir(directory):
         raise ValueError(f"Path does not exist: {directory}")
     
-    files: list[File] = get_supported_files(directory)
+    files: list[File] = get_supported_files(directory, recursive=True)
 
     for f in files:
         todos: list[Todo] = get_todos_from_file(f)
