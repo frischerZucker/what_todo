@@ -26,7 +26,7 @@ There are no requirement besides Python and its Standard Library.
 ```python
 python what-todo.py [-h] [-r] [path]
 ```
-You can pass it a path to a directory or file that should be scanned using the positional argument __dir__. 
+You can pass it a path to a directory or file that should be scanned using the positional argument __path__. 
 If none is passed it defaults to the current working directory.
 
 You can also use the following optional arguments:  
