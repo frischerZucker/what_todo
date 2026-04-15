@@ -35,6 +35,11 @@ class Todo:
     def show(
         self,
     ) -> None:
+        """
+        Print info about the todo.
+
+        Format: [FILE]@[LINE NUMBER]: [DESCRIPTION]
+        """
         print(f"{self.file}@{self.line}: {self.description}")
 
 @dataclass
@@ -107,9 +112,11 @@ def get_todos_from_file(
             line_counter = line_counter + 1
 
             # We are only looking for todos in comments. -> Ignore line without comments.
-            if not line.startswith(file.comment_specifier):
+            if not file.comment_specifier in line:
                 continue
             
+            line = line[line.find(file.comment_specifier):] # Remove everything before the comment starts
+
             # Line has no todo. -> Skip.
             if not "TODO:" in line:
                 continue
