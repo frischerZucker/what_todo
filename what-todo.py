@@ -31,6 +31,11 @@ class Todo:
         :returns: str
         """
         return f"{self.file}@{self.line}"
+    
+    def show(
+        self,
+    ) -> None:
+        print(f"{self.file}@{self.line}: {self.description}")
 
 @dataclass
 class File:
@@ -108,8 +113,10 @@ def get_todos_from_file(
             # Line has no todo. -> Skip.
             if not "TODO:" in line:
                 continue
+            
+            description: str = line[line.find("TODO:") + len("TODO: "):-1] # Remove everythin until "TODO" and trailing '\n'
 
-            todos.append(Todo(file=file.name, line=line_counter, description=line))
+            todos.append(Todo(file=file.name, line=line_counter, description=description))
 
     return todos
 
@@ -154,4 +161,6 @@ if __name__ == "__main__":
         print(f"TODOs in {f.name}:")
         
         for t in todos:
-            print(f"  {t.location()}: {t.description[:-1]}")
+            t.show()
+
+        print("")
