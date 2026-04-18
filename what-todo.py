@@ -159,11 +159,17 @@ if __name__ == "__main__":
 
         files.append(File(path=args.path, name=file_name, extension=file_name.split(".")[-1], comment_specifier=comment_specifiers[file_name.split(".")[-1]]))
 
+    num_todos: int = 0
+    num_files: int = 0
+    
     for f in files:
         todos: list[Todo] = get_todos_from_file(f)
 
         if not todos:
             continue
+
+        num_todos = num_todos + len(todos)
+        num_files = num_files + 1
 
         print(f"TODOs in {f.name}:")
         
@@ -171,3 +177,5 @@ if __name__ == "__main__":
             t.show()
 
         print("")
+    
+    print(f"There are {num_todos} open Todos in {num_files} {"file" if num_files == 1 else "files"}.")
